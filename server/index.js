@@ -1,9 +1,8 @@
-const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const mongoose = require("mongoose");
 const app = require("./app"); // Your Express app (routes, middleware)
 const { handleSocketConnection } = require("./socket");
+const { mongoDb } = require("./function/db");
 
 const port = process.env.PORT || 5000;
 
@@ -20,20 +19,9 @@ const io = new Server(server, {
 
 // Setup socket handling
 handleSocketConnection(io);
-
+mongoDb();
 // Optional: Base route for testing server connection
 // Start server
 server.listen(port, () => {
   console.log(`🚀 Server listening on http://localhost:${port}`);
 });
-
-// Connect to MongoDB (example)
-
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => {
-    console.log("✅ MongoDB connected");
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-  });
