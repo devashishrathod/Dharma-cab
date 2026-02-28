@@ -1,0 +1,238 @@
+[
+  {
+    "city": "Pune",
+    "areas": [
+      "Shivajinagar",
+      "Koregaon Park",
+      "Kothrud",
+      "Aundh",
+      "Camp",
+      "Viman Nagar",
+      "Wakad",
+      "Baner",
+      "Hinjewadi",
+      "Deccan"
+    ],
+    "airports": [
+      {
+        "name": "Pune International Airport",
+        "code": "PNQ",
+        "terminalCount": 2
+      }
+    ]
+  },
+  {
+    "city": "Delhi",
+    "areas": [
+      "Connaught Place",
+      "Karol Bagh",
+      "Chanakyapuri",
+      "Lajpat Nagar",
+      "Dwarka",
+      "Nehru Place",
+      "Paharganj",
+      "Saket",
+      "Mayur Vihar",
+      "Vasant Kunj"
+    ],
+    "airports": [
+      {
+        "name": "Indira Gandhi International Airport",
+        "code": "DEL",
+        "terminalCount": 3
+      }
+    ]
+  },
+  {
+    "city": "Mumbai",
+    "areas": [
+      "Colaba",
+      "Bandra",
+      "Andheri",
+      "Dadar",
+      "Juhu",
+      "Malad",
+      "Powai",
+      "Worli",
+      "Charni Road",
+      "Goregaon"
+    ],
+    "airports": [
+      {
+        "name": "Chhatrapati Shivaji International Airport",
+        "code": "BOM",
+        "terminalCount": 2
+      }
+    ]
+  },
+  {
+    "city": "Bangalore",
+    "areas": [
+      "Koramangala",
+      "Indiranagar",
+      "Whitefield",
+      "Electronic City",
+      "Jayanagar",
+      "Malleshwaram",
+      "Banashankari",
+      "Hebbal",
+      "Yeshwanthpur",
+      "Marathahalli"
+    ],
+    "airports": [
+      {
+        "name": "Kempegowda International Airport",
+        "code": "BLR",
+        "terminalCount": 1
+      }
+    ]
+  },
+  {
+    "city": "Chennai",
+    "areas": [
+      "Mylapore",
+      "Adyar",
+      "T. Nagar",
+      "Egmore",
+      "Anna Nagar",
+      "Guindy",
+      "Nungambakkam",
+      "Velachery",
+      "Mogappair",
+      "Pallavaram"
+    ],
+    "airports": [
+      {
+        "name": "Chennai International Airport",
+        "code": "MAA",
+        "terminalCount": 2
+      }
+    ]
+  },
+  {
+    "city": "Pune",
+    "areas": [
+      "Shivajinagar",
+      "Koregaon Park",
+      "Kothrud",
+      "Aundh",
+      "Camp",
+      "Viman Nagar",
+      "Wakad",
+      "Baner",
+      "Hinjewadi",
+      "Deccan"
+    ],
+    "airports": [
+      {
+        "name": "Pune International Airport",
+        "code": "PNQ",
+        "terminalCount": 2
+      }
+    ]
+  },
+  {
+    "city": "Lucknow",
+    "areas": [
+      "Hazratganj",
+      "Gomti Nagar",
+      "Alambagh",
+      "Indira Nagar",
+      "Aliganj",
+      "Charbagh",
+      "Aminabad",
+      "Jankipuram",
+      "Mahanagar",
+      "Chowk"
+    ],
+    "airports": [
+      {
+        "name": "Chaudhary Charan Singh International Airport",
+        "code": "LKO",
+        "terminalCount": 1
+      }
+    ]
+  },
+  {
+    "city": "Patna",
+    "areas": [
+      "Kankarbagh",
+      "Boring Road",
+      "Gandhi Maidan",
+      "Danapur",
+      "Digha",
+      "Rajendra Nagar",
+      "Ashiana Nagar",
+      "Phulwari Sharif",
+      "Bakerganj",
+      "Sri Krishna Puri"
+    ],
+    "airports": [
+      {
+        "name": "Jay Prakash Narayan International Airport",
+        "code": "PAT",
+        "terminalCount": 1
+      }
+    ]
+  },
+  {
+    "city": "Purnia",
+    "areas": [
+      "Bhatta Bazar",
+      "Rambagh",
+      "Kasba",
+      "Khazanchi Road",
+      "Dhamdaha",
+      "Banmankhi",
+      "Krishnanagar",
+      "Sarsi",
+      "Kaswa",
+      "Panchgarhi"
+    ],
+    "airports": []
+  },
+  {
+    "city": "Prayagraj",
+    "areas": [
+      "Civil Lines",
+      "Allahabad University",
+      "Tagore Town",
+      "Georgetown",
+      "Mutthiganj",
+      "Jhunsi",
+      "Naini",
+      "Sarojini Nagar",
+      "Daraganj",
+      "Teliarganj"
+    ],
+    "airports": [
+      {
+        "name": "Allahabad Airport",
+        "code": "IXD",
+        "terminalCount": 1
+      }
+    ]
+  },
+  {
+    "city": "Kanpur",
+    "areas": [
+      "Mall Road",
+      "Civil Lines",
+      "Kidwai Nagar",
+      "Kakadeo",
+      "Ashok Nagar",
+      "Swaroop Nagar",
+      "Pandu Nagar",
+      "Harsh Nagar",
+      "Shyam Nagar",
+      "Lajpat Nagar"
+    ],
+    "airports": [
+      {
+        "name": "Chakeri Airport",
+        "code": "KNU",
+        "terminalCount": 1
+      }
+    ]
+  }
+]

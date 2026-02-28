@@ -1,0 +1,506 @@
+﻿=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\admin\account.js
+
+const mongoose = require("mongoose");
+
+const adminSchema = new mongoose.Schema({
+  name: { type: String, default: "ADMIN" },
+  email: { type: String },
+  password : { type: String},
+  imgUrl: {
+    type: String,
+    default:
+      "https://static.vecteezy.com/system/resources/previews/008/442/086/non_2x/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg",
+  },
+});
+
+const adminModel = mongoose.model("admin", adminSchema);
+module.exports = adminModel;
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\Bike\Bike.js
+
+const mongoose = require("mongoose");
+
+const bikeSchema = new mongoose.Schema({
+  manufacturer: { type: String },
+  model: { type: String },
+  fuelType: { type: String },
+  bikeNo: { type: String },
+  imgUrl: { type: String },
+  availability: { type: String, default: "Available" }, // Available/Booked
+});
+
+module.exports = mongoose.model("Bike", bikeSchema);
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\bookings\airport.js
+
+// const mongoose = require("mongoose");
+
+// const bookingSchema = new mongoose.Schema({
+//   rideCategory: { type: String },
+//   //   booking details
+//   pickupLocation: {
+//     address : { type: String},
+//     city : { type: String}
+//   },
+//   destinationLocation: { type: String },
+//   distance: { type: String },
+//   duration: { type: String },
+//   bookingDate: { type: String },
+//   bookingTime: { type: String },
+//   placeId: { type: String, default: "0000" },
+//   // bookingStatus
+//   bookingStatus: { type: String, default: "waiting for pickup" },
+//   //waiting for pickup->req sent from passenger and looking for cab rider
+//   //in transit-> cab rider has accepted booking
+//   //cancel-> passenger or cab rider cancelled the booking
+//   //passsenger and rider ids
+//   passengerId: { type: mongoose.Schema.Types.ObjectId, ref: "passenger" },
+//   riderId: { type: mongoose.Schema.Types.ObjectId, ref: "rider" },
+//   carId : { type: mongoose.Schema.Types.ObjectId, ref: "car" },
+// });
+
+// const bookingModel = mongoose.model("booking", bookingSchema);
+// module.exportsÂ =Â bookingModel;
+
+
+const mongoose = require("mongoose");
+
+const airportBookingSchema = new mongoose.Schema({
+  rideCategory: { type: String },
+  //   booking details
+  pickupLocation: {
+    address : { type: String},
+    city : { type: String}
+  },
+  destinationLocation: { type: String },
+  distance: { type: String },
+  duration: { type: String },
+  bookingDate: { type: String },
+  bookingTime: { type: String },
+  placeId: { type: String, default: "0000" },
+  // bookingStatus
+  bookingStatus: { type: String, default: "waiting for pickup" },
+  //waiting for pickup->req sent from passenger and looking for cab rider
+  //in transit-> cab rider has accepted booking
+  //cancel-> passenger or cab rider cancelled the booking
+  //passsenger and rider ids
+  passengerId: { type: mongoose.Schema.Types.ObjectId, ref: "passenger" },
+  riderId: { type: mongoose.Schema.Types.ObjectId, ref: "rider" },
+  carId : { type: mongoose.Schema.Types.ObjectId, ref: "car" },
+});
+
+const airportBookingModel = mongoose.model("airportBooking", airportBookingSchema);
+module.exportsÂ =Â airportBookingModel;
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\bookings\bikeRider.js
+
+const mongoose = require("mongoose");
+
+const riderBookingSchema = new mongoose.Schema({
+    rideCategory: { type: String },
+    //   booking details
+    pickupLocation: {
+        address: { type: String },
+        city: { type: String }
+    },
+    destinationLocation: { type: String },
+    distance: { type: String },
+    duration: { type: String },
+    bookingDate: { type: String },
+    bookingTime: { type: String },
+    placeId: { type: String, default: "0000" },
+    // bookingStatus
+    bookingStatus: { type: String, default: "waiting for pickup" },
+    //waiting for pickup->req sent from passenger and looking for cab rider
+    //in transit-> cab rider has accepted booking
+    //cancel-> passenger or cab rider cancelled the booking
+    //passsenger and rider ids
+    passengerId: { type: mongoose.Schema.Types.ObjectId, ref: "passenger" },
+    riderId: { type: mongoose.Schema.Types.ObjectId, ref: "rider" },
+    carId: { type: mongoose.Schema.Types.ObjectId, ref: "car" },
+});
+
+const riderBookingModel = mongoose.model("riderBooking", riderBookingSchema);
+module.exports = riderBookingModel;
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\bookings\city.js
+
+const mongoose = require("mongoose");
+
+const cityBookingSchema = new mongoose.Schema({
+  rideCategory: { type: String },
+  //   booking details
+  pickupLocation: {
+    address : { type: String},
+    city : { type: String}
+  },
+  destinationLocation: { type: String },
+  distance: { type: String },
+  duration: { type: String },
+  bookingDate: { type: String },
+  bookingTime: { type: String },
+  placeId: { type: String, default: "0000" },
+  // bookingStatus
+  bookingStatus: { type: String, default: "waiting for pickup" },
+  //waiting for pickup->req sent from passenger and looking for cab rider
+  //in transit-> cab rider has accepted booking
+  //cancel-> passenger or cab rider cancelled the booking
+  //passsenger and rider ids
+  passengerId: { type: mongoose.Schema.Types.ObjectId, ref: "passenger" },
+  riderId: { type: mongoose.Schema.Types.ObjectId, ref: "rider" },
+  carId : { type: mongoose.Schema.Types.ObjectId, ref: "car" },
+});
+
+const cityBookingModel = mongoose.model("cityBooking", cityBookingSchema);
+module.exportsÂ =cityBookingModel;
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\bookings\outStation.js
+
+const mongoose = require("mongoose");
+
+const outStationBookingSchema = new mongoose.Schema({
+  rideCategory: { type: String },
+  //   booking details
+  pickupLocation: {
+    address : { type: String},
+    city : { type: String}
+  },
+  destinationLocation: { type: String },
+  distance: { type: String },
+  duration: { type: String },
+  bookingDate: { type: String },
+  bookingTime: { type: String },
+  placeId: { type: String, default: "0000" },
+  // bookingStatus
+  bookingStatus: { type: String, default: "waiting for pickup" },
+  //waiting for pickup->req sent from passenger and looking for cab rider
+  //in transit-> cab rider has accepted booking
+  //cancel-> passenger or cab rider cancelled the booking
+  //passsenger and rider ids
+  passengerId: { type: mongoose.Schema.Types.ObjectId, ref: "passenger" },
+  riderId: { type: mongoose.Schema.Types.ObjectId, ref: "rider" },
+  carId : { type: mongoose.Schema.Types.ObjectId, ref: "car" },
+});
+
+const outStationBookingModel = mongoose.model("outStationBooking", outStationBookingSchema);
+module.exportsÂ =Â outStationBookingModel;
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\bookings\rental.js
+
+const mongoose = require('mongoose')
+
+const mongoose_schema = new mongoose.Schema({
+    // rideCategory: { type: String },//rental
+    pickupCity: { type: String },
+    pickupLocation: { type: String },
+    pickupDate: { type: String },
+    endDate: { type: String },
+    totalDays: { type: Number },
+    payableAmount: { type: Number },
+    passengerId: { type: mongoose.Schema.Types.ObjectId, ref:'passenger' },
+    carId: { type: mongoose.Schema.Types.ObjectId , ref:"car"},
+    bookingDate: { type: Date, default: Date.now }
+})
+
+
+module.exports = mongoose.model('rental-bookings', mongoose_schema)
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\cars\car.js
+
+const mongoose = require("mongoose");
+const carSchema = new mongoose.Schema({
+  manufacturer: {
+    type: String,
+  },
+  model: {
+    type: String,
+  },
+  fuelType: {
+    type: String,
+  },
+  transmissionType: {
+    type: String,
+  },
+  carNo: {
+    type: String,
+  },
+  description: {
+    type: String,
+  },
+  // features: {
+  //   type: [String],
+  // },
+  // engine: {
+  //   type: String,
+  // },
+  imgUrl: { type: String },
+  seatingCapacity: {
+    type: Number,
+  },
+  luggageCapacity: {
+    type: Number,
+  },
+  dailyRate: {
+    type: Number,
+  },
+  monthlyRate: {
+    type: Number,
+  },
+  //working:{type:String},
+  availability: {
+    type: String, //available/ booked
+    default: "Available",
+  },
+});
+const carModel = mongoose.model("car", carSchema);
+module.exports = carModel;
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\customer\account.js
+
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  name: { type: String, default: "XYZ" },
+  email: { type: String },
+  imgUrl: {
+    type: String,
+    default:
+      "https://static.vecteezy.com/system/resources/previews/008/442/086/non_2x/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg",
+  },
+  contact: { type: Number },
+  state: { type: String },
+  city: { type: String },
+  emergencyContactNumber : { type: Number},
+  trackingNumber : { type: Number },
+  favoriteAddress : [
+  {
+    title : { type: String},
+    address : { type: String}
+  }
+  ],
+  otp: { type: Number, default: 0 },
+});
+
+const userModel = mongoose.model("passenger", userSchema);
+module.exports = userModel;
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\customer\cities.js
+
+const mongoose = require("mongoose");
+const citySchema = new mongoose.Schema({
+    cityName: { type: String },
+    cityBrief: [],
+    thumbnailUrl: {
+        type: String,
+        default:
+            "https://static.vecteezy.com/system/resources/previews/008/442/086/non_2x/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg",
+    },
+    imgUrl: {
+        type: String,
+        default:
+            "https://static.vecteezy.com/system/resources/previews/008/442/086/non_2x/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg",
+    },
+});
+
+const cityModel = mongoose.model("city", citySchema);
+module.exports = cityModel;
+
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\customer\enquiry.js
+
+const mongoose = require("mongoose");
+
+const enquirySchema = new mongoose.Schema({
+  name: { type: String, default: "Adiya Partner" },
+  email: { type: String },
+  contact: { type: Number },
+  comment : { type: String },
+  city: { type: String },
+  date : { type: Date },
+  time :{ type: String },
+});
+
+const enquiryModel = mongoose.model("enquiry", enquirySchema);
+module.exports = enquiryModel;
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\customer\partner.js
+
+const mongoose = require("mongoose");
+
+const partnerSchema = new mongoose.Schema({
+  name: { type: String, default: "Adiya Partner" },
+  email: { type: String },
+  contact: { type: Number },
+  state: { type: String },
+  city: { type: String },
+  status : { type: String },
+});
+
+const partnerModel = mongoose.model("partner", partnerSchema);
+module.exports = partnerModel;
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\Cycle\Cycle.js
+
+const mongoose = require("mongoose");
+
+const cycleSchema = new mongoose.Schema({
+  brand: { type: String },
+  model: { type: String },
+  type: { type: String }, // E.g., Mountain, Road, Hybrid
+  imgUrl: { type: String },
+  availability: { type: String, default: "Available" }, // Available/Booked
+});
+
+module.exports = mongoose.model("Cycle", cycleSchema);
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\offers\bankOffers.js
+
+const mongoose = require("mongoose");
+const bankOfferSchema = new mongoose.Schema({
+    title: {
+        type: String,
+    },
+    imageUrl: {
+        type: String,
+    },
+    text: {
+        type: String,
+    },
+});
+const bankOfferModel = mongoose.model("bankOffers", bankOfferSchema);
+module.exports = bankOfferModel;
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\offers\dailyOffers.js
+
+const mongoose = require("mongoose");
+const dailyOfferSchema = new mongoose.Schema({
+    title: {
+        type: String,
+    },
+    imageUrl: {
+        type: String,
+    },
+    text: {
+        type: String,
+    },
+});
+const dailyOfferModel = mongoose.model("dailyOffers", dailyOfferSchema);
+module.exports = dailyOfferModel;
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\offers\monthlyOffers.js
+
+const mongoose = require("mongoose");
+const monthlyOfferSchema = new mongoose.Schema({
+    title: {
+        type: String,
+    },
+    imageUrl: {
+        type: String,
+    },
+    text: {
+        type: String,
+    },
+});
+const monthlyOfferModel = mongoose.model("monthlyOffers", monthlyOfferSchema);
+module.exports = monthlyOfferModel;
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\rider\account.js
+
+const mongoose = require("mongoose");
+const riderSchema = new mongoose.Schema({
+  name: { type: String },
+  email: { type: String },
+  contact: { type: String },
+  password: { type: String, select: false },
+  locality: { type: String },
+  city: { type: String },
+  state: { type: String },
+  pincode: { type: Number },
+  drivingLicenseNo: { type: String },
+  vehicleRegistrationNo: { type: String },
+  adminVerification: { type: Boolean, default: false },
+  currentLocation: { type: String },
+
+  lat: { type: Number },
+  long: { type: Number },
+
+  riderId: { type: String },
+  serialNo: { type: Number },
+  serviceCategory: { type: String },
+  carDetails: {
+    companyName: { type: String },
+    model: { type: String },
+    color: { type: String },
+  },
+  profileImgUrl: {
+    type: String,
+    default:
+      "https://static.vecteezy.com/system/resources/previews/008/442/086/non_2x/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg",
+  },
+});
+const riderModel = mongoose.model("rider", riderSchema);
+module.exports = riderModel;
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\Taxi\Taxi.js
+
+const mongoose = require("mongoose");
+
+const taxiSchema = new mongoose.Schema({
+  manufacturer: { type: String },
+  model: { type: String },
+  fuelType: { type: String },
+  transmissionType: { type: String },
+  seatingCapacity: { type: Number },
+  carNo: { type: String },
+  imgUrl: { type: String },
+  availability: { type: String, default: "Available" }, // Available/Booked
+});
+
+module.exports = mongoose.model("Taxi", taxiSchema);
+
+
+=======================================================================
+E:\WORK\ABS\Projects\adiya-cabs\server\model\data.js
+
+const mongoose = require("mongoose");
+
+const citydataSchema = new mongoose.Schema({
+  city: { type: String },
+  areas: [{ type: String }],
+  airports: [{ type: String }],
+});
+
+const dataModel = mongoose.model("data", citydataSchema);
+module.exports = dataModel;
+
+
