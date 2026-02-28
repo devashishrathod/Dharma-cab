@@ -30,10 +30,7 @@ server.listen(port, () => {
 // Connect to MongoDB (example)
 
 mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URL)
   .then(() => {
     console.log("✅ MongoDB connected");
   })
