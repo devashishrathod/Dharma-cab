@@ -24,7 +24,7 @@ function sendOtpMail(email, OTP) {
     to: email,
     subject: "User created successfully",
     text: `
-                Welcome to the MERU,
+                Welcome to the Dharma Cab!,
                 Thank you for choosing us!
                 Your OTP is ${OTP}
                 `,
@@ -56,7 +56,7 @@ router.post("/send-otp", async (req, resp) => {
       // Update OTP for existing user
       await User.updateOne(
         { email },
-        { $set: { otp: generatedOTP, fcmToken } }
+        { $set: { otp: generatedOTP, fcmToken } },
       );
       await sendOtpMail(email, generatedOTP);
       return resp.json({
@@ -68,10 +68,11 @@ router.post("/send-otp", async (req, resp) => {
     // Generate unique referral code (e.g., ABCD1, ABCD2...)
     const generateReferralCode = () =>
       Array.from({ length: 4 }, () =>
-        String.fromCharCode(Math.floor(Math.random() * 26) + 65)
+        String.fromCharCode(Math.floor(Math.random() * 26) + 65),
       ).join("");
 
-    const referralCode = generateReferralCode() + (referralCount?.sequence_value || 1);
+    const referralCode =
+      generateReferralCode() + (referralCount?.sequence_value || 1);
 
     // Create new user
     const newUser = await User.create({
@@ -82,7 +83,9 @@ router.post("/send-otp", async (req, resp) => {
 
     // If referralCode was used, track referral
     if (refCode) {
-      const referringUser = await User.findOne({ referralCode: refCode }).select('name mobileNumber');
+      const referringUser = await User.findOne({
+        referralCode: refCode,
+      }).select("name mobileNumber");
       if (referringUser) {
         const referralSetting = await ReferalSetting.findOne();
         await ReferalsList.create({
@@ -93,8 +96,9 @@ router.post("/send-otp", async (req, resp) => {
           creditRewardAmount: 0,
           status: "Pending",
           referalType: "Real cash",
-          amountDistributionPercentage: referralSetting?.amountDistributionPercentage || 0,
-          isLogin: false
+          amountDistributionPercentage:
+            referralSetting?.amountDistributionPercentage || 0,
+          isLogin: false,
         });
       }
     }
@@ -116,10 +120,11 @@ router.post("/send-otp", async (req, resp) => {
     });
   } catch (err) {
     console.error("Error in /send-otp:", err);
-    resp.status(500).json({ success: false, msg: "Server error", error: err.message });
+    resp
+      .status(500)
+      .json({ success: false, msg: "Server error", error: err.message });
   }
 });
-
 
 router.post("/resend-otp", async (req, res) => {
   const { email } = req.body;
@@ -149,7 +154,7 @@ router.post("/resend-otp", async (req, res) => {
       { email },
       {
         $set: { otp: generatedOTP },
-      }
+      },
     );
 
     // Send OTP mail
@@ -168,7 +173,6 @@ router.post("/resend-otp", async (req, res) => {
   }
 });
 
-
 // verify otp
 router.post("/verify-otp", async (req, resp) => {
   try {
@@ -184,8 +188,8 @@ router.post("/verify-otp", async (req, resp) => {
     // console.log( findUser.otp )
     if (otp === findUser.otp) {
       const token = jwt.sign(
-        { _id: findUser._id,userStatus:"customer" },
-        process.env.JWT_SECRET_KEY
+        { _id: findUser._id, userStatus: "customer" },
+        process.env.JWT_SECRET_KEY,
       );
 
       // Optionally clear OTP
@@ -195,15 +199,20 @@ router.post("/verify-otp", async (req, resp) => {
         status: true,
         msg: "OTP verification successful",
         token,
-        referralCode:findUser.referralCode,
-        findUser
+        referralCode: findUser.referralCode,
+        findUser,
       });
     } else {
-      return resp.json({ status: false, msg: "Invalid OTP. Please enter again" });
+      return resp.json({
+        status: false,
+        msg: "Invalid OTP. Please enter again",
+      });
     }
   } catch (err) {
     console.error(err);
-    return resp.status(500).json({ status: false, msg: "Server error", error: err.message });
+    return resp
+      .status(500)
+      .json({ status: false, msg: "Server error", error: err.message });
   }
 });
 
@@ -212,21 +221,32 @@ router.post("/validate_referal_code", async (req, resp) => {
     const { referralCode } = req.body;
 
     if (!referralCode) {
-      return resp.status(200).json({ success: false, message: "Referral code is required" });
+      return resp
+        .status(200)
+        .json({ success: false, message: "Referral code is required" });
     }
 
-    const findUser = await User.findOne({ referralCode }).select('name mobileNumber');
+    const findUser = await User.findOne({ referralCode }).select(
+      "name mobileNumber",
+    );
 
     if (!findUser) {
-      return resp.status(200).json({ success: false, message: "Invalid referral code" });
+      return resp
+        .status(200)
+        .json({ success: false, message: "Invalid referral code" });
     }
 
-    return resp.status(200).json({ success: true, message: "Referral code is valid", user: findUser });
+    return resp.status(200).json({
+      success: true,
+      message: "Referral code is valid",
+      user: findUser,
+    });
   } catch (err) {
     console.error(err);
-    return resp.status(500).json({ success: false, message: "Server error", error: err.message });
+    return resp
+      .status(500)
+      .json({ success: false, message: "Server error", error: err.message });
   }
 });
-
 
 module.exports = router;
