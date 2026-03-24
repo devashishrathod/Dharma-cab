@@ -9,7 +9,7 @@ const taxiRoutes = require("./route/taxiRoutes");
 const bookings = require("./route/bookingRoutes");
 const promoCode = require("./route/customer/promoCode")
 const aboutus = require("./route/aboutUs/aboutus");
-const riderVehicle =require("./route/rider/vehicle")
+const riderVehicle = require("./route/rider/vehicle")
 const pricing = require('./route/admin/pricing')
 const adminBooking = require('./route/admin/booking')
 const driverRating = require('./route/customer/driverRating')
@@ -30,17 +30,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
 // customer routes
-app.use("/api",require("./route/customer/account"));
+app.use("/api", require("./route/customer/account"));
 app.use(require("./route/customer/booking"));
 app.use(require("./route/customer/cities"));
-app.use("/api",require("./route/customer/profile"));
+app.use("/api", require("./route/customer/profile"));
 app.use(require("./route/customer/enquiry"));
 app.use(require("./route/customer/partner"));
 app.use(require("./route/customer/cars"));
+app.use(require("./route/customer/support"));
 
 // // driver routes
-app.use('/api/',require("./route/rider/account"));
-app.use('/api/',require("./route/rider/booking"));
+app.use('/api/', require("./route/rider/account"));
+app.use('/api/', require("./route/rider/booking"));
 
 // // Admin routes
 app.use(require("./route/admin/account"));
@@ -50,6 +51,7 @@ app.use(require("./route/admin/monthlyOffers"))
 app.use(require("./route/admin/car"))
 app.use(require('./route/admin/rental-bookings'))
 app.use(require('./route/admin/dashbord'))
+app.use(require("./route/admin/support"));
 
 
 
