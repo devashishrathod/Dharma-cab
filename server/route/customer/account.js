@@ -8,6 +8,10 @@ const User = require("../../model/customer/account");
 const ReferalCount = require("../../model/customer/referalCount");
 const ReferalsList = require("../../model/customer/referal");
 const ReferalSetting = require("../../model/admin/referal");
+const { sendOtpToMobile } = require("../../function/twoFactor/sendOtpToMobile");
+const {
+  verifyOtpToMobile,
+} = require("../../function/twoFactor/verifyOtpToMobile");
 
 //send email with OTP
 function sendOtpMail(email, OTP) {
@@ -246,6 +250,132 @@ router.post("/validate_referal_code", async (req, resp) => {
     return resp
       .status(500)
       .json({ success: false, message: "Server error", error: err.message });
+  }
+});
+
+// search user, send OTP via SMS
+router.post("/send-otp-contact", async (req, resp) => {
+  const { contact, fcmToken, referralCode: refCode } = req.body;
+
+  try {
+    const existingUser = await User.findOne({ contact });
+    const referralCount = await ReferalCount.findOne();
+
+    if (existingUser) {
+      // Send OTP to existing user via SMS
+      const smsResponse = await sendOtpToMobile(contact);
+
+      // Update FCM token for existing user
+      await User.updateOne({ contact }, { $set: { fcmToken } });
+
+      return resp.json({
+        success: true,
+        msg: "OTP sent successfully to existing user.",
+        sessionId: smsResponse.Details,
+      });
+    }
+
+    // Generate unique referral code (e.g., ABCD1, ABCD2...)
+    const generateReferralCode = () =>
+      Array.from({ length: 4 }, () =>
+        String.fromCharCode(Math.floor(Math.random() * 26) + 65),
+      ).join("");
+
+    const referralCode =
+      generateReferralCode() + (referralCount?.sequence_value || 1);
+
+    // Create new user
+    const newUser = await User.create({
+      ...req.body,
+      referralCode,
+    });
+
+    // Send OTP to new user via SMS
+    const smsResponse = await sendOtpToMobile(contact);
+
+    // If referralCode was used, track referral
+    if (refCode) {
+      const referringUser = await User.findOne({
+        referralCode: refCode,
+      }).select("name mobileNumber");
+      if (referringUser) {
+        const referralSetting = await ReferalSetting.findOne();
+        await ReferalsList.create({
+          referrerId: referringUser._id,
+          refereeId: newUser._id,
+          referralCode: refCode,
+          rewardAmount: referralSetting?.amount || 0,
+          creditRewardAmount: 0,
+          status: "Pending",
+          referalType: "Real cash",
+          amountDistributionPercentage:
+            referralSetting?.amountDistributionPercentage || 0,
+          isLogin: false,
+        });
+      }
+    }
+
+    // If no referral count exists, create it
+    if (!referralCount) {
+      await ReferalCount.create({ sequence_value: 2 });
+    } else {
+      // Or increment the sequence
+      await ReferalCount.updateOne({}, { $inc: { sequence_value: 1 } });
+    }
+
+    resp.json({
+      success: true,
+      msg: "OTP sent and new user created successfully.",
+      user: newUser,
+      sessionId: smsResponse.Details,
+    });
+  } catch (err) {
+    console.error("Error in /send-otp-contact:", err);
+    resp
+      .status(500)
+      .json({ success: false, msg: "Server error", error: err.message });
+  }
+});
+
+// verify OTP via SMS
+router.post("/verify-otp-contact", async (req, resp) => {
+  try {
+    const { contact, sessionId, otp } = req.body;
+    console.log("Received OTP:", otp, "for contact:", contact);
+
+    const findUser = await User.findOne({ contact });
+
+    if (!findUser) {
+      return resp.json({ status: false, msg: "User not found" });
+    }
+
+    // Verify OTP with SMS service
+    const smsVerification = await verifyOtpToMobile(sessionId, otp);
+
+    if (smsVerification.Status === "Success") {
+      const token = jwt.sign(
+        { _id: findUser._id, userStatus: "customer" },
+        process.env.JWT_SECRET_KEY,
+      );
+
+      return resp.json({
+        status: true,
+        msg: "OTP verification successful",
+        token,
+        referralCode: findUser.referralCode,
+        findUser,
+      });
+    } else {
+      return resp.json({
+        status: false,
+        msg: "Invalid OTP. Please enter again",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    return resp
+      .status(500)
+      .json({ status: false, msg: "Server error", error: err.message });
   }
 });
 
