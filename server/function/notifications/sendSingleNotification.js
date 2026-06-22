@@ -1,11 +1,35 @@
-const Rider = require("../../model/rider/account");
+const fs = require("fs");
+const path = require("path");
 const admin = require("firebase-admin");
-const serviceAccount = require("../../firebaseServiceKeys.json");
+const Rider = require("../../model/rider/account");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  // databaseURL: "https://<your-project-id>.firebaseio.com",
-});
+let serviceAccount;
+
+// Render Secret File Path
+const renderSecretPath = "/etc/secrets/firebaseServiceKeys.json";
+
+if (fs.existsSync(renderSecretPath)) {
+  console.log("✅ Using Firebase Secret File from Render");
+  serviceAccount = require(renderSecretPath);
+} else {
+  console.log("✅ Using Local Firebase Service Account");
+  serviceAccount = require(
+    path.join(__dirname, "../../firebaseServiceKeys.json"),
+  );
+}
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
+
+// module.exports = admin;
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   // databaseURL: "https://<your-project-id>.firebaseio.com",
+// });
 
 exports.sendSingleNotification = async (
   driverId,
