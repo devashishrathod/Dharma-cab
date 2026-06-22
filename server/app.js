@@ -19,7 +19,7 @@ const favoriteAddress = require("./route//customer/favoriteAddress");
 const payment = require("./route/customer/payment/payment");
 const wallet = require("./route/customer/payment/wallet");
 const referal = require("./route/admin/referal");
-const rating = require("./route/rider/rating");
+// const rating = require("./route/rider/rating");
 
 app.get("/", async (req, resp) => {
   resp.send("Socket server is running!");
@@ -45,7 +45,7 @@ app.use(require("./route/customer/support"));
 // // driver routes
 app.use("/api/", require("./route/rider/account"));
 app.use("/api/", require("./route/rider/booking"));
-app.use("/api/", require("./route/rider/rating"));
+// app.use("/api/", require("./route/rider/rating"));
 
 // // Admin routes
 app.use(require("./route/admin/account"));
