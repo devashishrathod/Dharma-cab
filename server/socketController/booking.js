@@ -8,7 +8,7 @@ const booking = require("../model/booking/booking");
 const riderInfo = require("../model/rider/account");
 const geolib = require("geolib");
 const pricingModel = require("../model/admin/pricing");
-const PromoCode = require('../model/customer/promoCode')
+const PromoCode = require("../model/customer/promoCode");
 
 const getCyCaleBookingData = async (io, userId, type) => {
   const response = await booking
@@ -55,10 +55,10 @@ const handleBooking = async (
     userId,
   },
   onlineDrivers,
-  driverUpdateTimestamps
+  driverUpdateTimestamps,
 ) => {
   socket.join(userId);
-  socket.join(userId+"_booking_Status");
+  socket.join(userId + "_booking_Status");
 
   try {
     let vehicleDetails;
@@ -89,32 +89,38 @@ const handleBooking = async (
       });
     }
 
-  
-    const vehiclePricingInfo = await pricingModel.findOne({ vehicleType:rideType });
-    const code = await PromoCode.findOne({ code: promoCode.trim(), isActive: true });
-    let validPromo = false
-    
-      
-        if (code.expiryDate > new Date() && code &&(code?.validUsers?.includes(userId) || code?.isOnlyForValidUser) &&
-        code.usageLimit>code.usedCount 
-        ) {
-            validPromo=true
-        }
+    const vehiclePricingInfo = await pricingModel.findOne({
+      vehicleType: rideType,
+    });
+    let code;
+    let validPromo = false;
+    if (promoCode && promoCode?.trim()?.length() > 0) {
+      code = await PromoCode.findOne({
+        code: promoCode.trim(),
+        isActive: true,
+      });
 
+      if (
+        code.expiryDate > new Date() &&
+        code &&
+        (code?.validUsers?.includes(userId) || code?.isOnlyForValidUser) &&
+        code.usageLimit > code.usedCount
+      ) {
+        validPromo = true;
+      }
+    }
 
-          
-let payableAmount = distance * vehiclePricingInfo.chargePerKem;
+    let payableAmount = distance * vehiclePricingInfo.chargePerKem;
 
-if (validPromo && code) {
-  if (code.discountType === "fixed") {
-    payableAmount -= code.discountValue;
-    code.usedCount+=1
-  } else if (code.discountType === "percentage") {
-    code.usedCount+=1
-    payableAmount -= (payableAmount * code.discountValue) / 100;
-  }
-}
-
+    if (validPromo && code) {
+      if (code.discountType === "fixed") {
+        payableAmount -= code.discountValue;
+        code.usedCount += 1;
+      } else if (code.discountType === "percentage") {
+        code.usedCount += 1;
+        payableAmount -= (payableAmount * code.discountValue) / 100;
+      }
+    }
 
     const bookingData = {
       rideCategory: rideType,
@@ -129,22 +135,22 @@ if (validPromo && code) {
       payableAmount,
       type,
       [rideType]: vehicleId,
-      bookingOtp: Math.floor(1000 + Math.random() * 9000)
+      bookingOtp: Math.floor(1000 + Math.random() * 9000),
     };
 
     const bookingModel = await booking.create(bookingData);
     // vehicleDetails.availability= 'Booked'
     const response = await vehicleDetails.save();
-     await code.save()
+    if (code) await code.save();
 
     const driverInfo = await riderInfo.findById(vehicleDetails.createdBy);
 
-    const locationInfo = driverUpdateTimestamps.get(driverInfo?._id?.toString());
-
-
+    const locationInfo = driverUpdateTimestamps.get(
+      driverInfo?._id?.toString(),
+    );
 
     // Calculate distance (assuming `distanceCalcToPricing` is in meters)
-    
+
     // console.log(locationInfo)
 
     socket.emit("booking-response", {
@@ -157,13 +163,13 @@ if (validPromo && code) {
             long: locationInfo.longitude,
           }
         : driverInfo,
-      idDriverOnline:!!locationInfo,  
-      
-    //   driverDistanceKm: Number(distanceInKm),
-    //   driverDistanceMeter: Number(distanceInMeters),
+      idDriverOnline: !!locationInfo,
+
+      //   driverDistanceKm: Number(distanceInKm),
+      //   driverDistanceMeter: Number(distanceInMeters),
       success: true,
     });
-    
+
     socket.join(`${userId}${rideType}_bookingwaiting for pickup`);
 
     // Emit booking data to frontend based on ride type
@@ -201,29 +207,27 @@ if (validPromo && code) {
   }
 };
 const updateRideStatus = async (io, socket, bookingId, bookingType) => {
- 
-
   try {
-  const updatedBooking = await booking.findByIdAndUpdate(
-        bookingId,
+    const updatedBooking = await booking.findByIdAndUpdate(
+      bookingId,
       { bookingStatus: bookingType },
-      { new: true }
+      { new: true },
     );
 
     let vehicleSchema;
 
-     switch (updatedBooking.rideCategory) {
+    switch (updatedBooking.rideCategory) {
       case "car":
-        vehicleSchema =  Car;
+        vehicleSchema = Car;
         break;
       case "bike":
-        vehicleSchema =  Bike;
+        vehicleSchema = Bike;
         break;
       case "cycle":
-        vehicleSchema =  Cycle;
+        vehicleSchema = Cycle;
         break;
       case "taxi":
-        vehicleSchema =  Taxi;
+        vehicleSchema = Taxi;
         break;
       default:
         return socket.emit("booking-response", {
@@ -236,22 +240,29 @@ const updateRideStatus = async (io, socket, bookingId, bookingType) => {
       throw new Error("Booking not found");
     }
 
-    const room = updatedBooking.passengerId.toString() +"_booking_Status";
+    const room = updatedBooking.passengerId.toString() + "_booking_Status";
     socket.join(room);
-    const vehicleId =  updatedBooking.car ||  updatedBooking.bike ||updatedBooking.cycle||updatedBooking.taxi
-    if(bookingType?.trim()?.toLowerCase()==="ongoing"){
-    await vehicleSchema.findByIdAndUpdate(vehicleId,
-      { availability: 'Booked' },
-      { new: true }
-    )
-    }else{
-      await vehicleSchema.findByIdAndUpdate(vehicleId,
-      { availability: 'Available' },
-      { new: true }
-    )
+    const vehicleId =
+      updatedBooking.car ||
+      updatedBooking.bike ||
+      updatedBooking.cycle ||
+      updatedBooking.taxi;
+    if (bookingType?.trim()?.toLowerCase() === "ongoing") {
+      await vehicleSchema.findByIdAndUpdate(
+        vehicleId,
+        { availability: "Booked" },
+        { new: true },
+      );
+    } else {
+      await vehicleSchema.findByIdAndUpdate(
+        vehicleId,
+        { availability: "Available" },
+        { new: true },
+      );
     }
 
-    const message = bookingType === 'cancelled' ? "Cancel Booking" : "Confirm Booking";
+    const message =
+      bookingType === "cancelled" ? "Cancel Booking" : "Confirm Booking";
 
     io.to(room).emit("driver_booking_response", {
       data: updatedBooking,
@@ -261,7 +272,6 @@ const updateRideStatus = async (io, socket, bookingId, bookingType) => {
 
     // Leave the room after successful emit
     socket.leave(room);
-
   } catch (error) {
     // If error happens before updatedBooking is available
     // console.error("updateRideStatus error:", error.message);
@@ -282,5 +292,4 @@ const updateRideStatus = async (io, socket, bookingId, bookingType) => {
   }
 };
 
-
-module.exports = {handleBooking,updateRideStatus};
+module.exports = { handleBooking, updateRideStatus };

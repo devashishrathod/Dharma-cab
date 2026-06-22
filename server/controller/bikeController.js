@@ -17,8 +17,8 @@ exports.getAllBikes = async (req, res) => {
         totalItems: total,
         currentPage: page,
         totalPages: Math.ceil(total / limit),
-        pageSize: limit
-      }
+        pageSize: limit,
+      },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -39,7 +39,9 @@ exports.getBikeById = async (req, res) => {
   try {
     const bike = await Bike.findById(req.params.id);
     if (!bike) {
-      return res.status(404).json({ success: false, message: "Bike not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Bike not found" });
     }
     res.status(200).json({ success: true, data: bike });
   } catch (error) {
@@ -61,9 +63,13 @@ exports.addBike = async (req, res) => {
 // Update a bike
 exports.updateBike = async (req, res) => {
   try {
-    const bike = await Bike.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const bike = await Bike.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!bike) {
-      return res.status(404).json({ success: false, message: "Bike not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Bike not found" });
     }
     res.status(200).json({ success: true, data: bike });
   } catch (error) {
@@ -76,9 +82,13 @@ exports.deleteBike = async (req, res) => {
   try {
     const bike = await Bike.findByIdAndDelete(req.params.id);
     if (!bike) {
-      return res.status(404).json({ success: false, message: "Bike not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Bike not found" });
     }
-    res.status(200).json({ success: true, message: "Bike deleted successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Bike deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

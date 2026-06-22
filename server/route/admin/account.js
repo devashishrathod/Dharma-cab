@@ -8,6 +8,8 @@ const Admin = require("../../model/admin/account");
 const Rider = require("../../model/rider/account");
 const accountMiddleware = require("../../middleware/account");
 
+const salt = process.env.SALT || 10;
+
 //send email with OTP
 function sendVerificationMail(email, riderId, name) {
   let transporter = nodemailer.createTransport({
@@ -42,10 +44,43 @@ function sendVerificationMail(email, riderId, name) {
   });
 }
 
+// Register Admin
+router.post("/admin-register", async (req, resp) => {
+  let { name, email, password } = req.body;
+  email = email?.toLowerCase()?.trim();
+  try {
+    const admin = await Admin.findOne({ email });
+    if (admin) {
+      return resp.json({
+        success: false,
+        msg: "Admin already registered with this email",
+      });
+    }
+    const hashPassword = await bcrypt.hash(password, parseInt(salt));
+    const newAdmin = await Admin.create({
+      name: name?.toLowerCase()?.trim(),
+      email,
+      password: hashPassword,
+    });
+    const token = jwt.sign(
+      { _id: newAdmin._id, userStatus: "admin" },
+      process.env.JWT_SECRET_KEY,
+    );
+    resp.json({
+      success: true,
+      msg: "Register successful",
+      data: { admin: newAdmin, token: token },
+    });
+  } catch (err) {
+    resp.status(500).json({ success: false, msg: err.message });
+  }
+});
+
 // Admin Login
 router.post("/admin-login", async (req, resp) => {
-  const { email, password } = req.body;
+  let { email, password } = req.body;
   // console.log(req.body);
+  email = email?.toLowerCase()?.trim();
   try {
     const admin = await Admin.findOne({ email });
     if (!admin) {
@@ -63,7 +98,10 @@ router.post("/admin-login", async (req, resp) => {
       });
     }
 
-      const token = jwt.sign({ _id: admin._id, userStatus:"admin" }, process.env.JWT_SECRET_KEY);
+    const token = jwt.sign(
+      { _id: admin._id, userStatus: "admin" },
+      process.env.JWT_SECRET_KEY,
+    );
     resp.json({
       success: true,
       msg: "Login successful",
@@ -79,17 +117,16 @@ router.post("/admin-login", async (req, resp) => {
 
 // Verify the rider
 router.put("/admin-rider-verification", async (req, resp) => {
-    const { riderId } = req.body;
-    console.log(req.body);
-    try {
-        const rider = await Rider.findOne({ riderId: riderId });
-        if (!rider) {
-            return resp.json({
-                success: false,
-                msg: "Incorrect rider Details",
-            });
-        }
-
+  const { riderId } = req.body;
+  console.log(req.body);
+  try {
+    const rider = await Rider.findOne({ riderId: riderId });
+    if (!rider) {
+      return resp.json({
+        success: false,
+        msg: "Incorrect rider Details",
+      });
+    }
 
     if (rider.adminVerification === false) {
       const updateRider = await Rider.updateOne(
@@ -97,7 +134,7 @@ router.put("/admin-rider-verification", async (req, resp) => {
         {
           $set: { adminVerification: true },
         },
-        { new: true }
+        { new: true },
       );
       sendVerificationMail(rider.email, riderId, rider.name);
       return resp.json({
@@ -110,7 +147,7 @@ router.put("/admin-rider-verification", async (req, resp) => {
         {
           $set: { adminVerification: false },
         },
-        { new: true }
+        { new: true },
       );
     }
     return resp.json({

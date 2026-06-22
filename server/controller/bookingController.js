@@ -9,12 +9,13 @@ const Bike = require("../model/Bike/Bike");
 const Taxi = require("../model/Taxi/Taxi");
 const Cycle = require("../model/Cycle/Cycle");
 const booking = require("../model/booking/booking");
-
-
+const {
+  sendSingleNotification,
+} = require("../function/notifications/sendSingleNotification");
 
 exports.confirmBooking = async (req, res) => {
   try {
-    const {
+    let {
       currentLocation,
       destination,
       rideType, // car, bike, cycle, taxi
@@ -24,7 +25,7 @@ exports.confirmBooking = async (req, res) => {
       promoCode,
       duration,
       distance,
-      type
+      type,
     } = req.body;
 
     const userId = req.accountId; // Authenticated user ID from token
@@ -69,7 +70,7 @@ exports.confirmBooking = async (req, res) => {
       bookingStatus: "waiting for pickup",
       carId: vehicleId,
       payableAmount,
-      type
+      type,
     };
 
     let bookingModel;
@@ -84,14 +85,23 @@ exports.confirmBooking = async (req, res) => {
     // Update vehicle availability to "Booked"
     vehicleDetails.availability = "Booked";
     await vehicleDetails.save();
-
+    const driverId = vehicleDetails.createdBy.toString();
+    await sendSingleNotification(
+      driverId,
+      userId,
+      (title = "new booking is arrived"),
+      (description = ""),
+      (type = type || "booking"),
+    );
     res.status(201).json({
       message: "Booking confirmed successfully.",
       bookingDetails: bookingModel,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Something went wrong while booking the ride." });
+    res
+      .status(500)
+      .json({ error: "Something went wrong while booking the ride." });
   }
 };
 
@@ -110,7 +120,9 @@ exports.getBookings = async (req, res) => {
     let statusFilter;
     switch (status) {
       case "upcoming":
-        statusFilter = { bookingStatus: { $in: ["waiting for pickup", "ongoing"] } };
+        statusFilter = {
+          bookingStatus: { $in: ["waiting for pickup", "ongoing"] },
+        };
         break;
       case "completed":
         statusFilter = { bookingStatus: "completed" };
@@ -124,26 +136,32 @@ exports.getBookings = async (req, res) => {
     const bookings = await Promise.all([
       AirportBooking.find({ passengerId: userId, ...statusFilter }).populate({
         path: "carId",
-        select: "manufacturer model carNo imgUrl seatingCapacity luggageCapacity dailyRate monthlyRate availability",
+        select:
+          "manufacturer model carNo imgUrl seatingCapacity luggageCapacity dailyRate monthlyRate availability",
       }),
       RiderBooking.find({ passengerId: userId, ...statusFilter }).populate({
         path: "carId",
-        select: "manufacturer model carNo imgUrl seatingCapacity luggageCapacity dailyRate monthlyRate availability",
+        select:
+          "manufacturer model carNo imgUrl seatingCapacity luggageCapacity dailyRate monthlyRate availability",
       }),
       CityBooking.find({ passengerId: userId, ...statusFilter }).populate({
         path: "carId",
-        select: "manufacturer model carNo imgUrl seatingCapacity luggageCapacity dailyRate monthlyRate availability",
+        select:
+          "manufacturer model carNo imgUrl seatingCapacity luggageCapacity dailyRate monthlyRate availability",
       }),
-      OutStationBooking.find({ passengerId: userId, ...statusFilter }).populate({
-        path: "carId",
-        select: "manufacturer model carNo imgUrl seatingCapacity luggageCapacity dailyRate monthlyRate availability",
-      }),
+      OutStationBooking.find({ passengerId: userId, ...statusFilter }).populate(
+        {
+          path: "carId",
+          select:
+            "manufacturer model carNo imgUrl seatingCapacity luggageCapacity dailyRate monthlyRate availability",
+        },
+      ),
       RentalBooking.find({ passengerId: userId, ...statusFilter }).populate({
         path: "carId",
-        select: "manufacturer model carNo imgUrl seatingCapacity luggageCapacity dailyRate monthlyRate availability",
+        select:
+          "manufacturer model carNo imgUrl seatingCapacity luggageCapacity dailyRate monthlyRate availability",
       }),
     ]);
-    
 
     const flattenedBookings = bookings.flat(); // Combine bookings from all categories
 
@@ -153,15 +171,16 @@ exports.getBookings = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Something went wrong while fetching bookings." });
+    res
+      .status(500)
+      .json({ error: "Something went wrong while fetching bookings." });
   }
 };
 
-
 exports.updateBookingStatus = async (req, res) => {
   try {
-    const { id } = req.params;               // Get booking ID from URL
-    const { status,rejectMessage,rideStatus } = req.body;             // Get new status from body
+    const { id } = req.params; // Get booking ID from URL
+    const { status, rejectMessage, rideStatus } = req.body; // Get new status from body
     // Validate input
     if (!status) {
       return res.status(400).json({ error: "Status is required." });
@@ -169,16 +188,21 @@ exports.updateBookingStatus = async (req, res) => {
     // Find and update booking by ID
     const updatedBooking = await booking.findByIdAndUpdate(
       id,
-      { bookingStatus:status,rejectMessage },
-      { new: true }                          // Return the updated document
+      { bookingStatus: status, rejectMessage },
+      { new: true }, // Return the updated document
     );
     if (!updatedBooking) {
       return res.status(404).json({ error: "Booking not found." });
     }
-    res.status(200).json({message: `Booking status updated successfully.`,data: updatedBooking})
+    res.status(200).json({
+      message: `Booking status updated successfully.`,
+      data: updatedBooking,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Something went wrong while updating booking status." });
+    res
+      .status(500)
+      .json({ error: "Something went wrong while updating booking status." });
   }
 };
 
@@ -188,7 +212,7 @@ exports.updateRideStatus = async (req, res) => {
     const { otp } = req.body;
 
     // Find booking by ID
-    console.log(id)
+    console.log(id);
     const bookingData = await booking.findById(id);
 
     if (!bookingData) {
@@ -215,5 +239,3 @@ exports.updateRideStatus = async (req, res) => {
     });
   }
 };
-
-
