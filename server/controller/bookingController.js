@@ -9,6 +9,7 @@ const Bike = require("../model/Bike/Bike");
 const Taxi = require("../model/Taxi/Taxi");
 const Cycle = require("../model/Cycle/Cycle");
 const booking = require("../model/booking/booking");
+const Rider = require("../model/rider/account");
 const {
   sendSingleNotification,
 } = require("../function/notifications/sendSingleNotification");
@@ -86,13 +87,20 @@ exports.confirmBooking = async (req, res) => {
     vehicleDetails.availability = "Booked";
     await vehicleDetails.save();
     const driverId = vehicleDetails.createdBy.toString();
-    await sendSingleNotification(
-      driverId,
-      userId,
-      (title = "new booking is arrived"),
-      (description = ""),
-      (type = type || "booking"),
-    );
+    const driver = await Rider.findById(driverId);
+    console.log(driver);
+    if (!driver) {
+      res.status(404).send({ success: false, message: "Driver not found" });
+    }
+    if (driver?.fcmToken) {
+      await sendSingleNotification(
+        driverId,
+        userId,
+        (title = "new booking is arrived"),
+        (description = ""),
+        (type = type || "booking"),
+      );
+    }
     res.status(201).json({
       message: "Booking confirmed successfully.",
       bookingDetails: bookingModel,

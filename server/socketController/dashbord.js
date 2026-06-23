@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const booking = require("../model/booking/booking");
 const driver = require("../model/rider/account");
 const car = require("../model/cars/car");
@@ -15,179 +16,215 @@ const handale_Booking_Dashbord = async (socket) => {
 };
 
 const handale_Online_Driver = async (io, onlineDrivers) => {
-  // if (!Array.isArray(onlineDrivers)) {
-  //   console.log(onlineDrivers,"Invalid driver data format")
-  //   return socket.emit("dashboardError", { error: "Invalid driver data format" });
-  // }
+  console.log("Online Drivers:", onlineDrivers);
 
   try {
+    // Ensure iterable
+    const driversArray = Array.isArray(onlineDrivers)
+      ? onlineDrivers
+      : [...onlineDrivers];
 
-    const onlineDriverData = await driver.find({ _id: { $in: [...onlineDrivers] } });
-    io.to('online_driver_dashbord+').emit("dashboard_Online_Driver", onlineDriverData);
-    // console.log(`Sent ${onlineDriverData.length} online drivers to socket ${socket.id}`);
+    // Extract only valid driver IDs
+    const driverIds = [
+      ...new Set(
+        driversArray
+          .map((item) => {
+            if (typeof item === "string") return item;
+            if (item && typeof item === "object" && item.driverId) {
+              return item.driverId;
+            }
+            return null;
+          })
+          .filter((id) => id && mongoose.Types.ObjectId.isValid(id)),
+      ),
+    ];
+
+    console.log("Valid Driver IDs:", driverIds);
+
+    if (!driverIds.length) {
+      return io
+        .to("online_driver_dashbord+")
+        .emit("dashboard_Online_Driver", []);
+    }
+
+    const onlineDriverData = await driver.find({
+      _id: { $in: driverIds },
+    });
+
+    io.to("online_driver_dashbord+").emit(
+      "dashboard_Online_Driver",
+      onlineDriverData,
+    );
   } catch (error) {
-    console.error("Dashboard error:", error.message);
-    io.to('online_driver_dashbord+').emit("dashboardError", { 
+    console.error("Dashboard error:", error);
+
+    io.to("online_driver_dashbord+").emit("dashboardError", {
       error: "Failed to load dashboard data",
-      details: error.message 
+      details: error.message,
     });
   }
 };
 
-
 const handale_Booking_Status_Count = async (socket) => {
   try {
     // Vehicle counts
-    const cycaleCount = await cycale.countDocuments();    
-    const bikeCount = await bike.countDocuments();    
-    const taxiCount = await taxi.countDocuments();    
+    const cycaleCount = await cycale.countDocuments();
+    const bikeCount = await bike.countDocuments();
+    const taxiCount = await taxi.countDocuments();
     const carCount = await car.countDocuments();
-    
-const now = new Date();
-const firstDayOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
-// Optional: for debugging
-console.log("firstDayOfLastMonth:", firstDayOfLastMonth);
-console.log("lastDayOfLastMonth:", lastDayOfLastMonth);
-console.log("firstDayOfThisMonth:", firstDayOfThisMonth);
+    const now = new Date();
+    const firstDayOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayOfLastMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      1,
+    );
+    const lastDayOfLastMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
 
-const groupedByStatus = [
-  {
-    $group: {
-      _id: "$bookingStatus",
-      totalCount: { $sum: 1 },
+    // Optional: for debugging
+    console.log("firstDayOfLastMonth:", firstDayOfLastMonth);
+    console.log("lastDayOfLastMonth:", lastDayOfLastMonth);
+    console.log("firstDayOfThisMonth:", firstDayOfThisMonth);
 
-      // ✅ Last Month
-      lastMonthCount: {
-        $sum: {
-          $cond: [
-            {
-              $and: [
-                { $gte: ["$bookingDate", firstDayOfLastMonth] },
-                { $lte: ["$bookingDate", lastDayOfLastMonth] },
+    const groupedByStatus = [
+      {
+        $group: {
+          _id: "$bookingStatus",
+          totalCount: { $sum: 1 },
+
+          // ✅ Last Month
+          lastMonthCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ["$bookingDate", firstDayOfLastMonth] },
+                    { $lte: ["$bookingDate", lastDayOfLastMonth] },
+                  ],
+                },
+                1,
+                0,
               ],
             },
-            1,
-            0,
-          ],
-        },
-      },
-      lastMonthRevenue: {
-        $sum: {
-          $cond: [
-            {
-              $and: [
-                { $eq: ["$bookingStatus", "completed"] },
-                { $gte: ["$bookingDate", firstDayOfLastMonth] },
-                { $lte: ["$bookingDate", lastDayOfLastMonth] },
+          },
+          lastMonthRevenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$bookingStatus", "completed"] },
+                    { $gte: ["$bookingDate", firstDayOfLastMonth] },
+                    { $lte: ["$bookingDate", lastDayOfLastMonth] },
+                  ],
+                },
+                "$payableAmount",
+                0,
               ],
             },
-            "$payableAmount",
-            0,
-          ],
-        },
-      },
+          },
 
-      // ✅ This Month
-      thisMonthCount: {
-        $sum: {
-          $cond: [
-            { $gte: ["$bookingDate", firstDayOfThisMonth] },
-            1,
-            0,
-          ],
-        },
-      },
-      thisMonthRevenue: {
-        $sum: {
-          $cond: [
-            {
-              $and: [
-                { $eq: ["$bookingStatus", "completed"] },
-                { $gte: ["$bookingDate", firstDayOfThisMonth] },
+          // ✅ This Month
+          thisMonthCount: {
+            $sum: {
+              $cond: [{ $gte: ["$bookingDate", firstDayOfThisMonth] }, 1, 0],
+            },
+          },
+          thisMonthRevenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$bookingStatus", "completed"] },
+                    { $gte: ["$bookingDate", firstDayOfThisMonth] },
+                  ],
+                },
+                "$payableAmount",
+                0,
               ],
             },
-            "$payableAmount",
-            0,
-          ],
+          },
         },
       },
-    },
-  },
-]; 
+    ];
 
-const groupedByStatus1 = [
-  {
-    $group: {
-      _id: "$bookingStatus",
-      totalCount: { $sum: 1 },
-      lastMonthCount: {
-        $sum: {
-          $cond: [
-            {
-              $and: [
-                { $gte: ["$bookingDate", firstDayOfLastMonth] },
-                { $lte: ["$bookingDate", lastDayOfLastMonth] }
-              ]
+    const groupedByStatus1 = [
+      {
+        $group: {
+          _id: "$bookingStatus",
+          totalCount: { $sum: 1 },
+          lastMonthCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $gte: ["$bookingDate", firstDayOfLastMonth] },
+                    { $lte: ["$bookingDate", lastDayOfLastMonth] },
+                  ],
+                },
+                1,
+                0,
+              ],
             },
-            1,
-            0
-          ]
-        }
+          },
+          lastMonthRevenue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ["$bookingStatus", "completed"] },
+                    { $gte: ["$bookingDate", firstDayOfLastMonth] },
+                    { $lte: ["$bookingDate", lastDayOfLastMonth] },
+                  ],
+                },
+                "$payableAmount",
+                0,
+              ],
+            },
+          },
+        },
       },
-      lastMonthRevenue: {
-        $sum: {
-          $cond: [
-            {
-              $and: [
-                { $eq: ["$bookingStatus", "completed"] },
-                { $gte: ["$bookingDate", firstDayOfLastMonth] },
-                { $lte: ["$bookingDate", lastDayOfLastMonth] }
-              ]
-            },
-            "$payableAmount",
-            0
-          ]
-        }
-      }
-    }
-  }
-];
-// const groupedByStatus1 = [
-//       {
-//         $facet: {
-//           groupedByStatus: [
-//             {
-//               $group: {
-//                 _id: "$bookingStatus",
-//                 count: { $sum: 1 },
-//                 ongoingRevenue: {
-//                   $sum: {
-//                     $cond: [
-//                       { $eq: ["$bookingStatus", "completed"] },
-//                       "$payableAmount",
-//                       0,
-//                     ],
-//                   },
-//                 },
-//               },
-//             },
-//           ],
-//           totalBookings: [{ $count: "total" }],
-//           currentMonthCount: [
-//             { $match: { createdAt: { $gte: startOfCurrentMonth } } },
-//             { $count: "count" }
-//           ],
-//           lastMonthCount: [
-//             { $match: { createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } } },
-//             { $count: "count" }
-//           ]
-//         },
-//       },
-//     ]
-
+    ];
+    // const groupedByStatus1 = [
+    //       {
+    //         $facet: {
+    //           groupedByStatus: [
+    //             {
+    //               $group: {
+    //                 _id: "$bookingStatus",
+    //                 count: { $sum: 1 },
+    //                 ongoingRevenue: {
+    //                   $sum: {
+    //                     $cond: [
+    //                       { $eq: ["$bookingStatus", "completed"] },
+    //                       "$payableAmount",
+    //                       0,
+    //                     ],
+    //                   },
+    //                 },
+    //               },
+    //             },
+    //           ],
+    //           totalBookings: [{ $count: "total" }],
+    //           currentMonthCount: [
+    //             { $match: { createdAt: { $gte: startOfCurrentMonth } } },
+    //             { $count: "count" }
+    //           ],
+    //           lastMonthCount: [
+    //             { $match: { createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } } },
+    //             { $count: "count" }
+    //           ]
+    //         },
+    //       },
+    //     ]
 
     // Booking aggregation
     const response = await booking.aggregate(groupedByStatus);
@@ -202,7 +239,7 @@ const groupedByStatus1 = [
     };
 
     const bookingCount = response[0]?.groupedByStatus?.reduce((acc, el) => {
-      acc[el._id?.split(' ').join('')] = el.count;
+      acc[el._id?.split(" ").join("")] = el.count;
       acc.ongoingRevenue += el.ongoingRevenue;
       return acc;
     }, bookingCountObj);
@@ -223,10 +260,9 @@ const groupedByStatus1 = [
       //   carCount,
       //   bookingCount: bookingCount || bookingCountObj,
       // },
-      data:response,
+      data: response,
       success: true,
     });
-
   } catch (error) {
     console.log("Socket Error:", error);
     socket.emit("booking_status_count", {
@@ -236,4 +272,8 @@ const groupedByStatus1 = [
   }
 };
 
-module.exports = { handale_Booking_Dashbord , handale_Online_Driver ,handale_Booking_Status_Count};
+module.exports = {
+  handale_Booking_Dashbord,
+  handale_Online_Driver,
+  handale_Booking_Status_Count,
+};
